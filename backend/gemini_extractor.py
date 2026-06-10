@@ -8,9 +8,10 @@ load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-CONTACT_SCHEMA = {
+CARD_SCHEMA = {
     "type": "object",
     "properties": {
+        "card_no": {"type": "integer"},
         "name": {"type": "string"},
         "company": {"type": "string"},
         "designation": {"type": "string"},
@@ -20,49 +21,71 @@ CONTACT_SCHEMA = {
         "website": {"type": "string"},
         "address": {"type": "string"}
     },
-    "required": ["name", "company", "designation", "phone", "country", "email", "website", "address"]
+    "required": [
+        "card_no", "name", "company", "designation",
+        "phone", "country", "email", "website", "address"
+    ]
+}
+
+BATCH_SCHEMA = {
+    "type": "array",
+    "items": CARD_SCHEMA
 }
 
 
-def extract_with_gemini(raw_text: str):
-    prompt = f"""Extract business card details from OCR text.
+def extract_multiple_with_gemini(ocr_cards):
+    cards_text = ""
 
-Return only JSON.
+    for card in ocr_cards:
+        cards_text += f"""
+CARD {card["card_no"]}:
+{card["raw_text"]}
 
-Use these exact keys:
-name, company, designation, phone, country, email, website, address
+---
+"""
+
+    prompt = f"""
+Extract business card details from OCR text.
+
+Return only JSON array.
 
 Rules:
+- Each card must be separate.
+- Preserve card_no exactly.
 - If missing, use "Not available".
-- Join split company lines correctly. Example: CENDOT + SYSTEMS + PVT + LTD = CENDOT SYSTEMS PVT LTD.
-- Join split phone lines correctly. Example: +91 and 8657954865 = +918657954865.
-- Fix website OCR. Example: WWWE condotsystems com = www.condotsystems.com.
-- Fix email OCR if obvious.
-- Country can come from address text.
-- Do not invent unavailable values.
+- Fix obvious OCR mistakes:
+  gmail com -> gmail.com
+  condotsystems com -> condotsystems.com
+  WWWE -> www
+- Join split company names.
+- Join split phone numbers.
+- Do not invent missing values.
+- Keep address complete but clean.
 
-OCR TEXT:
-{raw_text}"""
+OCR CARDS:
+{cards_text}
+"""
 
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite",
         contents=prompt,
         config=types.GenerateContentConfig(
             temperature=0,
-            max_output_tokens=220,
+            max_output_tokens=900,
             response_mime_type="application/json",
-            response_schema=CONTACT_SCHEMA
+            response_schema=BATCH_SCHEMA
         )
     )
 
-    print("========== GEMINI RAW RESPONSE ==========")
+    print("========== GEMINI BATCH RESPONSE ==========")
     print(response.text)
-    print("=========================================")
+    print("===========================================")
 
     data = json.loads(response.text)
 
-    for key in CONTACT_SCHEMA["properties"].keys():
-        if not data.get(key):
-            data[key] = "Not available"
+    for item in data:
+        for key in CARD_SCHEMA["properties"].keys():
+            if not item.get(key):
+                item[key] = "Not available"
 
     return data

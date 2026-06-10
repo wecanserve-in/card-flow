@@ -12,6 +12,7 @@ function App() {
     setLoading(true);
     setCards(null);
 
+    
     const formData = new FormData();
 
     files.forEach((file) => {

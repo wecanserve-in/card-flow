@@ -6,7 +6,7 @@ import os
 import shutil
 
 from ocr import extract_text_from_image
-from gemini_extractor import extract_with_gemini
+from gemini_extractor import extract_multiple_with_gemini
 from extractor import extract_contact_details
 from export_excel import save_cards_to_excel
 
@@ -32,14 +32,12 @@ os.makedirs("exports", exist_ok=True)
 
 @app.get("/")
 def home():
-    return {
-        "message": "OCR API Running"
-    }
+    return {"message": "OCR API Running"}
 
 
 @app.post("/upload")
 async def upload_cards(files: list[UploadFile] = File(...)):
-    results = []
+    ocr_cards = []
 
     for index, file in enumerate(files, start=1):
         file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -53,22 +51,39 @@ async def upload_cards(files: list[UploadFile] = File(...)):
         print(raw_text)
         print("===============================================")
 
-        try:
-            extracted_data = extract_with_gemini(raw_text)
-            extracted_data["source"] = "gemini"
+        ocr_cards.append({
+            "card_no": index,
+            "filename": file.filename,
+            "raw_text": raw_text
+        })
 
-        except Exception as e:
-            print("Gemini failed, using fallback extractor")
-            print(e)
+    try:
+        results = extract_multiple_with_gemini(ocr_cards)
 
-            extracted_data = extract_contact_details(raw_text)
+        for card in results:
+            card["source"] = "gemini"
+
+    except Exception as e:
+        print("Gemini batch failed, using fallback extractor")
+        print(e)
+
+        results = []
+
+        for card in ocr_cards:
+            extracted_data = extract_contact_details(card["raw_text"])
+            extracted_data["card_no"] = card["card_no"]
             extracted_data["source"] = "fallback"
+            results.append(extracted_data)
 
-        extracted_data["card_no"] = index
-        extracted_data["filename"] = file.filename
-        extracted_data["raw_text"] = raw_text
+    for card in results:
+        matched = next(
+            (item for item in ocr_cards if item["card_no"] == card["card_no"]),
+            None
+        )
 
-        results.append(extracted_data)
+        if matched:
+            card["filename"] = matched["filename"]
+            card["raw_text"] = matched["raw_text"]
 
     save_cards_to_excel(results)
 
@@ -76,16 +91,15 @@ async def upload_cards(files: list[UploadFile] = File(...)):
         "total_cards": len(results),
         "cards": results,
         "excel_saved": True,
-        "excel_file": EXCEL_FILE
+        "excel_file": EXCEL_FILE,
+        "gemini_requests_used": 1
     }
 
 
 @app.get("/download-excel")
 def download_excel():
     if not os.path.exists(EXCEL_FILE):
-        return {
-            "message": "Excel file not found. Upload cards first."
-        }
+        return {"message": "Excel file not found. Upload cards first."}
 
     return FileResponse(
         EXCEL_FILE,

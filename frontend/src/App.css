@@ -2,11 +2,25 @@
   box-sizing: border-box;
 }
 
+:root {
+  --primary: #078c90;
+  --primary-dark: #061943;
+  --blue: #086bd8;
+  --bg: #eef7fb;
+  --text: #334e68;
+  --muted: #6f8293;
+  --border: #dceef7;
+  --card: rgba(255, 255, 255, 0.9);
+}
+
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
-  background: #eef7fb;
-  color: #102a43;
+  background:
+    radial-gradient(circle at top left, rgba(43, 191, 195, 0.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(8, 107, 216, 0.14), transparent 34%),
+    var(--bg);
+  color: var(--text);
 }
 
 .app {
@@ -14,43 +28,47 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 40px 18px;
+  padding: 42px 18px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .bgGlow {
-  position: absolute;
-  width: 360px;
-  height: 360px;
+  position: fixed;
+  width: 380px;
+  height: 380px;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.35;
+  filter: blur(70px);
+  opacity: 0.32;
+  pointer-events: none;
+  animation: floatGlow 8s ease-in-out infinite alternate;
 }
 
 .glowOne {
   background: #2bbfc3;
-  top: -100px;
-  left: -80px;
+  top: -120px;
+  left: -100px;
 }
 
 .glowTwo {
   background: #3a7bd5;
-  bottom: -120px;
-  right: -80px;
+  bottom: -140px;
+  right: -100px;
+  animation-delay: 1.5s;
 }
 
 .ocrCard {
   width: 100%;
-  max-width: 900px;
-  background: rgba(255, 255, 255, 0.88);
+  max-width: 980px;
+  background: var(--card);
   backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: 28px;
-  padding: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 30px;
+  padding: clamp(24px, 5vw, 44px);
   box-shadow: 0 30px 90px rgba(16, 42, 67, 0.16);
   position: relative;
   z-index: 1;
+  animation: fadeUp 0.55s ease both;
 }
 
 .badge {
@@ -58,42 +76,59 @@ body {
   padding: 8px 14px;
   border-radius: 999px;
   background: #e1f7f7;
-  color: #078c90;
+  color: var(--primary);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 1px;
   margin-bottom: 18px;
 }
 
 h1 {
   margin: 0;
-  font-size: 42px;
-  color: #061943;
-  letter-spacing: -1px;
+  font-size: clamp(32px, 5vw, 46px);
+  color: var(--primary-dark);
+  letter-spacing: -1.3px;
+  line-height: 1.05;
 }
 
 .subtitle {
   margin: 14px 0 28px;
-  max-width: 640px;
+  max-width: 680px;
   color: #5b7083;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.65;
 }
 
 .uploadBox {
   display: block;
   border: 2px dashed #9fdadc;
   background: linear-gradient(135deg, #f8ffff, #eef9ff);
-  border-radius: 22px;
-  padding: 34px;
+  border-radius: 24px;
+  padding: clamp(24px, 5vw, 38px);
   text-align: center;
   cursor: pointer;
   transition: 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.uploadBox::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: translateX(-120%);
+  transition: 0.7s ease;
+}
+
+.uploadBox:hover::before {
+  transform: translateX(120%);
 }
 
 .uploadBox:hover {
-  border-color: #078c90;
-  transform: translateY(-2px);
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 42px rgba(7, 140, 144, 0.13);
 }
 
 .uploadBox input {
@@ -101,26 +136,34 @@ h1 {
 }
 
 .uploadIcon {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   margin: 0 auto 14px;
-  border-radius: 22px;
+  border-radius: 24px;
   background: white;
   display: grid;
   place-items: center;
   font-size: 34px;
   box-shadow: 0 14px 35px rgba(7, 140, 144, 0.16);
+  position: relative;
+  z-index: 1;
+}
+
+.uploadBox h3,
+.uploadBox p {
+  position: relative;
+  z-index: 1;
 }
 
 .uploadBox h3 {
   margin: 0;
-  color: #061943;
-  font-size: 20px;
+  color: var(--primary-dark);
+  font-size: clamp(18px, 3vw, 21px);
 }
 
 .uploadBox p {
   margin: 8px 0 0;
-  color: #6f8293;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -128,29 +171,43 @@ h1 {
   margin-top: 16px;
   display: grid;
   gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .fileList span {
-  padding: 10px 14px;
-  border: 1px solid #dceef7;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
   background: #f8fcff;
-  color: #334e68;
-  border-radius: 12px;
+  color: var(--text);
+  border-radius: 13px;
   font-size: 14px;
+  animation: fadeUp 0.35s ease both;
+}
+
+.primaryBtn,
+.downloadBtn {
+  width: 100%;
+  padding: 16px 22px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s ease;
 }
 
 .primaryBtn {
-  width: 100%;
   margin-top: 22px;
-  padding: 16px 22px;
   border: none;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #078c90, #086bd8);
+  background: linear-gradient(135deg, var(--primary), var(--blue));
   color: white;
-  font-size: 16px;
-  font-weight: 800;
-  cursor: pointer;
   box-shadow: 0 16px 32px rgba(8, 107, 216, 0.24);
+}
+
+.primaryBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 38px rgba(8, 107, 216, 0.28);
 }
 
 .primaryBtn:disabled {
@@ -162,15 +219,17 @@ h1 {
 .previewTable {
   margin-top: 28px;
   border: 1px solid #e3eef5;
-  border-radius: 20px;
+  border-radius: 22px;
   overflow: hidden;
   background: white;
+  animation: fadeUp 0.45s ease both;
 }
 
 .tableHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 14px;
   padding: 18px 22px;
   background: #f7fbfd;
   border-bottom: 1px solid #e3eef5;
@@ -179,56 +238,69 @@ h1 {
 .tableHeader h2 {
   margin: 0;
   font-size: 18px;
-  color: #061943;
+  color: var(--primary-dark);
 }
 
 .tableHeader span {
   font-size: 12px;
-  font-weight: 800;
-  color: #078c90;
+  font-weight: 900;
+  color: var(--primary);
   background: #e1f7f7;
-  padding: 6px 10px;
+  padding: 7px 11px;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .emptyState {
-  padding: 26px 22px;
-  color: #6f8293;
+  padding: 28px 22px;
+  color: var(--muted);
   font-size: 15px;
+  line-height: 1.6;
 }
 
 .multiCards {
   padding: 22px;
-  display: grid;
-  gap: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .resultCard {
-  border: 1px solid #dceef7;
-  background: #f8fcff;
-  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #f8fcff, #ffffff);
+  border-radius: 20px;
   padding: 18px;
+  box-shadow: 0 14px 34px rgba(16, 42, 67, 0.06);
+  animation: cardIn 0.45s ease both;
+  width: 100%;
+}
+
+.resultCard:hover {
+  transform: translateY(-2px);
+  transition: 0.25s ease;
+  box-shadow: 0 18px 42px rgba(16, 42, 67, 0.09);
 }
 
 .resultCardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 14px;
 }
 
 .resultCardHeader h3 {
   margin: 0;
-  color: #078c90;
+  color: var(--primary);
   font-size: 18px;
 }
 
 .resultCardHeader span {
   font-size: 11px;
   text-transform: uppercase;
-  color: #086bd8;
+  color: var(--blue);
   background: #eaf4ff;
-  font-weight: 800;
+  font-weight: 900;
   padding: 6px 10px;
   border-radius: 999px;
 }
@@ -237,50 +309,31 @@ h1 {
   margin: 8px 0;
   padding: 12px 14px;
   background: white;
-  border-radius: 12px;
+  border-radius: 13px;
   border: 1px solid #e3eef5;
-  color: #334e68;
+  color: var(--text);
   line-height: 1.45;
+  word-break: break-word;
 }
 
 .resultCard b {
-  color: #061943;
+  color: var(--primary-dark);
 }
 
-@media (max-width: 600px) {
-  .ocrCard {
-    padding: 26px;
-    border-radius: 22px;
-  }
-
-  h1 {
-    font-size: 32px;
-  }
-
-  .uploadBox {
-    padding: 26px 18px;
-  }
-
-  
+.downloadArea {
+  padding: 0 22px 22px;
 }
 
 .downloadBtn {
-  width: 100%;
-  margin-top: 12px;
-  padding: 15px 22px;
-  border: 1px solid #078c90;
-  border-radius: 16px;
+  border: 1px solid var(--primary);
   background: white;
-  color: #078c90;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.25s;
+  color: var(--primary);
 }
 
 .downloadBtn:hover {
-  background: #078c90;
+  background: var(--primary);
   color: white;
+  transform: translateY(-2px);
 }
 
 .loadingOverlay {
@@ -293,37 +346,39 @@ h1 {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  animation: fadeIn 0.25s ease both;
 }
 
 .loadingModal {
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
   background: white;
-  border-radius: 24px;
-  padding: 34px 28px;
+  border-radius: 26px;
+  padding: 36px 28px;
   text-align: center;
   box-shadow: 0 30px 90px rgba(6, 25, 67, 0.25);
+  animation: scaleIn 0.28s ease both;
 }
 
 .loadingModal h2 {
   margin: 18px 0 8px;
-  color: #061943;
+  color: var(--primary-dark);
   font-size: 22px;
 }
 
 .loadingModal p {
   margin: 0;
-  color: #6f8293;
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.5;
 }
 
 .loader {
-  width: 58px;
-  height: 58px;
+  width: 60px;
+  height: 60px;
   margin: 0 auto;
   border: 5px solid #e1f7f7;
-  border-top-color: #078c90;
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.85s linear infinite;
 }
@@ -334,24 +389,117 @@ h1 {
   }
 }
 
-.downloadArea {
-  padding: 0 22px 22px;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.downloadBtn {
-  width: 100%;
-  padding: 15px 22px;
-  border: 1px solid #078c90;
-  border-radius: 16px;
-  background: white;
-  color: #078c90;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: 0.25s;
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.downloadBtn:hover {
-  background: #078c90;
-  color: white;
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes floatGlow {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(24px, 18px, 0);
+  }
+}
+
+
+
+@media (max-width: 700px) {
+  .app {
+    padding: 22px 12px;
+  }
+
+  .ocrCard {
+    border-radius: 22px;
+  }
+
+  .tableHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .multiCards {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .downloadArea {
+    padding: 0 16px 16px;
+  }
+
+  .resultCard {
+    padding: 15px;
+  }
+
+  .resultCardHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .resultCard p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 430px) {
+  .app {
+    padding: 14px 10px;
+  }
+
+  .ocrCard {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .uploadIcon {
+    width: 64px;
+    height: 64px;
+    font-size: 30px;
+  }
+
+  .primaryBtn,
+  .downloadBtn {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .fileList {
+    max-height: 110px;
+  }
+}
+
