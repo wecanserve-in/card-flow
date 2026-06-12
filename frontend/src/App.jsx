@@ -6,13 +6,14 @@ function App() {
   const [cards, setCards] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const uploadCards = async () => {
     if (!files.length) return;
 
     setLoading(true);
     setCards(null);
 
-    
     const formData = new FormData();
 
     files.forEach((file) => {
@@ -20,7 +21,7 @@ function App() {
     });
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/upload", {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formData,
       });
@@ -39,7 +40,7 @@ function App() {
   };
 
   const downloadExcel = () => {
-    window.open("http://127.0.0.1:8000/download-excel", "_blank");
+    window.open(`${API_URL}/download-excel`, "_blank");
   };
 
   return (
@@ -122,7 +123,6 @@ function App() {
                   <div className="resultCard" key={index}>
                     <div className="resultCardHeader">
                       <h3>Card {card.card_no || index + 1}</h3>
-                      {/* <span>{card.source || "ocr"}</span> */}
                     </div>
 
                     <p>
@@ -147,9 +147,6 @@ function App() {
                     <p>
                       <b>Website:</b> {card.website || "Not available"}
                     </p>
-                    {/* <p>
-                      <b>Address:</b> {card.address || "Not available"}
-                    </p> */}
                   </div>
                 ))}
               </div>
