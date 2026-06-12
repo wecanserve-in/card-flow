@@ -51,7 +51,14 @@ import cv2
 import easyocr
 import os
 
-reader = easyocr.Reader(["en"], gpu=False)
+reader = None
+
+
+def get_reader():
+    global reader
+    if reader is None:
+        reader = easyocr.Reader(["en"], gpu=False)
+    return reader
 
 
 def preprocess_image(image_path: str):
@@ -84,7 +91,16 @@ def preprocess_image(image_path: str):
 
 
 def extract_text_from_image(image_path: str):
-    print("OCR STARTED")
+    processed_path = preprocess_image(image_path)
 
-    # TEMPORARY TEST
-    return "TEST OCR"
+    reader = get_reader()
+
+    results = reader.readtext(
+        processed_path,
+        detail=0,
+        paragraph=False,
+        decoder="greedy",
+        batch_size=1
+    )
+
+    return "\n".join(results)
