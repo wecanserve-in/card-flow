@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 
 import os
 import shutil
-import traceback
 
 from gemini_extractor import extract_multiple_with_gemini
 from export_excel import save_cards_to_excel
@@ -28,16 +27,13 @@ os.makedirs("exports", exist_ok=True)
 
 @app.get("/")
 def home():
-    return {"message": "OCR API Running"}
+    return {"message": "Gemini Card Extraction API Running"}
 
 
 @app.post("/upload")
 async def upload_cards(files: list[UploadFile] = File(...)):
-
     if len(files) > 10:
-        return {
-            "message": "Maximum 10 cards allowed per upload."
-        }
+        return {"message": "Maximum 10 cards allowed per upload."}
 
     image_cards = []
 
@@ -54,32 +50,18 @@ async def upload_cards(files: list[UploadFile] = File(...)):
         })
 
     try:
-        print("STEP 1")
-        print(image_cards)
-
         results = extract_multiple_with_gemini(image_cards)
-
-        print("STEP 2")
-        print(results)
 
         for card in results:
             card["source"] = "gemini"
 
     except Exception as e:
-
-        print("\n========== GEMINI ERROR ==========")
-        traceback.print_exc()
-        print("=================================\n")
-
-        return {
-            "error": str(e)
-        }
+        return {"error": str(e)}
 
     for card in results:
         matched = next(
             (
-                item
-                for item in image_cards
+                item for item in image_cards
                 if item["card_no"] == card["card_no"]
             ),
             None

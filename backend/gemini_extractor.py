@@ -45,7 +45,6 @@ BATCH_SCHEMA = {
 
 
 def extract_multiple_with_gemini(image_cards):
-
     contents = []
 
     prompt = """
@@ -73,18 +72,10 @@ website
 address
 """
 
-    contents.append(
-        types.Part.from_text(text=prompt)
-    )
+    contents.append(types.Part.from_text(text=prompt))
 
     for card in image_cards:
-
-        mime_type = mimetypes.guess_type(
-            card["file_path"]
-        )[0]
-
-        if mime_type is None:
-            mime_type = "image/jpeg"
+        mime_type = mimetypes.guess_type(card["file_path"])[0] or "image/jpeg"
 
         with open(card["file_path"], "rb") as f:
             image_bytes = f.read()
@@ -106,10 +97,6 @@ address
             response_schema=BATCH_SCHEMA
         )
     )
-
-    print("========== GEMINI ==========")
-    print(response.text)
-    print("============================")
 
     data = json.loads(response.text)
 

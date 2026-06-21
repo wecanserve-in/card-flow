@@ -5,11 +5,13 @@ python-multipart
 opencv-python-headless
 pillow
 numpy
-pycountry
+
 pandas
 openpyxl
 
-sqlalchemy
-
 google-genai
 python-dotenv
+
+easyocr
+torch
+torchvision
